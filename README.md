@@ -20,18 +20,18 @@ A team of specialized agents coordinated by an orchestrator, in which **the LLM 
 
 ```mermaid
 flowchart TB
-    U([User]) <--> R
+    U(\[User]) <--> R
 
-    subgraph ADK["Google ADK · Gemini"]
-        R[pantry_concierge<br/><i>root orchestrator — no data tools</i>]
-        R -- delegate --> A[pantry_manager<br/><i>inventory CRUD</i>]
-        R -- delegate --> B[meal_planner<br/><i>weekly plans + preferences</i>]
-        R -- delegate --> C[shopping_assistant<br/><i>plan − pantry = list</i>]
+    subgraph ADK\["Google ADK · Gemini"]
+        R\[pantry\_concierge<br/><i>root orchestrator — no data tools</i>]
+        R -- delegate --> A\[pantry\_manager<br/><i>inventory CRUD</i>]
+        R -- delegate --> B\[meal\_planner<br/><i>weekly plans + preferences</i>]
+        R -- delegate --> C\[shopping\_assistant<br/><i>plan − pantry = list</i>]
     end
 
-    subgraph VAULT["PantryVault — custom MCP server (stdio, local)"]
-        V[11 validated tools<br/>+ audit log]
-        DB[(SQLite<br/>pantry · preferences/allergies<br/>meal plans · shopping lists)]
+    subgraph VAULT\["PantryVault — custom MCP server (stdio, local)"]
+        V\[11 validated tools<br/>+ audit log]
+        DB\[(SQLite<br/>pantry · preferences/allergies<br/>meal plans · shopping lists)]
         V --> DB
     end
 
@@ -44,36 +44,36 @@ flowchart TB
 
 ## Security (Concierge track focus)
 
-| Layer | Mechanism | Where |
-|---|---|---|
-| Data locality | All personal data in local SQLite; MCP over stdio — no ports, no network | `pantry_mcp/server.py` |
-| Least privilege | Per-agent MCP `tool_filter` allowlists; root agent has **zero** data tools | `pantry_concierge/agent.py` |
-| Input validation | Type/length/bounds checks + closed key sets on every tool argument | `pantry_mcp/server.py` |
-| Injection safety | Parameterized SQL only; malformed JSON rejected before persistence | `pantry_mcp/server.py` |
-| PII redaction | `before_model_callback` strips emails/phones/IBANs from user input before any model call | `pantry_concierge/callbacks.py` |
-| Transparency | Audit log of every tool invocation (names + timestamps, never argument values), queryable by the user in chat | `pantry_mcp/server.py` |
+|Layer|Mechanism|Where|
+|-|-|-|
+|Data locality|All personal data in local SQLite; MCP over stdio — no ports, no network|`pantry\_mcp/server.py`|
+|Least privilege|Per-agent MCP `tool\_filter` allowlists; root agent has **zero** data tools|`pantry\_concierge/agent.py`|
+|Input validation|Type/length/bounds checks + closed key sets on every tool argument|`pantry\_mcp/server.py`|
+|Injection safety|Parameterized SQL only; malformed JSON rejected before persistence|`pantry\_mcp/server.py`|
+|PII redaction|`before\_model\_callback` strips emails/phones/IBANs from user input before any model call|`pantry\_concierge/callbacks.py`|
+|Transparency|Audit log of every tool invocation (names + timestamps, never argument values), queryable by the user in chat|`pantry\_mcp/server.py`|
 
 ## Course concepts demonstrated
 
-| Concept | Where |
-|---|---|
-| Multi-agent system (ADK) | 1 orchestrator + 3 specialists, `sub_agents` delegation — code |
-| MCP server | Custom-built PantryVault server (FastMCP, stdio) — code |
-| Security features | Table above — code + video |
-| Antigravity | Used throughout development — video |
-| Deployability | `adk web` locally; Cloud Run instructions below — video |
+|Concept|Where|
+|-|-|
+|Multi-agent system (ADK)|1 orchestrator + 3 specialists, `sub\_agents` delegation — code|
+|MCP server|Custom-built PantryVault server (FastMCP, stdio) — code|
+|Security features|Table above — code + video|
+|Antigravity|Generated + ran the validation test suite (55 tests) — video|
+|Deployability|`adk web` locally; Cloud Run instructions below — video|
 
 ## Setup
 
 ```bash
-git clone <this-repo> && cd pantrypilot
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+git clone <this-repo> \&\& cd pantrypilot
+python -m venv .venv \&\& source .venv/bin/activate   # Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
 
-cp pantry_concierge/.env.example pantry_concierge/.env
-# edit .env and set GOOGLE_API_KEY (free: https://aistudio.google.com/apikey)
+cp pantry\_concierge/.env.example pantry\_concierge/.env
+# edit .env and set GOOGLE\_API\_KEY (free: https://aistudio.google.com/apikey)
 
-adk web        # open http://localhost:8000 and pick "pantry_concierge"
+adk web        # open http://localhost:8000 and pick "pantry\_concierge"
 ```
 
 No other services required — the MCP server is spawned automatically as a subprocess, and the database file is created on first use at `data/pantry.db`.
@@ -93,28 +93,29 @@ No other services required — the MCP server is spawned automatically as a subp
 The agent runs on Cloud Run via the ADK CLI:
 
 ```bash
-adk deploy cloud_run --project <PROJECT_ID> --region europe-west1 pantry_concierge
+adk deploy cloud\_run --project <PROJECT\_ID> --region europe-west1 pantry\_concierge
 ```
 
-For a private, single-user deployment keep `--no-allow-unauthenticated` (default) so the endpoint requires IAM auth; the SQLite vault should then be placed on a mounted volume (`PANTRY_DB=/mnt/data/pantry.db`).
+For a private, single-user deployment keep `--no-allow-unauthenticated` (default) so the endpoint requires IAM auth; the SQLite vault should then be placed on a mounted volume (`PANTRY\_DB=/mnt/data/pantry.db`).
 
 ## Repository layout
 
 ```
 pantrypilot/
-├── pantry_concierge/        # ADK agent package
+├── pantry\_concierge/        # ADK agent package
 │   ├── agent.py             # orchestrator + 3 specialists, tool allowlists
 │   ├── prompts.py           # all agent instructions in one reviewable place
-│   ├── callbacks.py         # PII redaction before_model_callback
+│   ├── callbacks.py         # PII redaction before\_model\_callback
 │   └── .env.example
-├── pantry_mcp/
+├── pantry\_mcp/
 │   └── server.py            # PantryVault MCP server (SQLite + validation + audit)
 ├── data/                    # created at runtime, gitignored
 └── requirements.txt
 ```
 
-## Limitations & next steps
+## Limitations \& next steps
 
-- Recipes come from the model's knowledge; a curated recipe MCP tool would make nutrition data exact.
-- Store grouping is preference-based; live store inventory/price APIs are out of scope (and would leak shopping behavior — a deliberate trade-off for privacy).
-- Multi-user households: per-member allergy profiles are a natural extension of the preferences schema.
+* Recipes come from the model's knowledge; a curated recipe MCP tool would make nutrition data exact.
+* Store grouping is preference-based; live store inventory/price APIs are out of scope (and would leak shopping behavior — a deliberate trade-off for privacy).
+* Multi-user households: per-member allergy profiles are a natural extension of the preferences schema.
+
