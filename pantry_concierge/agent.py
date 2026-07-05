@@ -112,6 +112,8 @@ root_agent = LlmAgent(
     model=MODEL,
     description="Personal kitchen concierge that coordinates pantry, planning and shopping specialists.",
     instruction=prompts.ROOT_INSTRUCTION,
+    # Metadata-only transparency tool: names + timestamps, never personal data.
+    tools=[_vault_tools(["get_audit_log"])],
     sub_agents=[pantry_manager, meal_planner, shopping_assistant],
     before_model_callback=redact_pii_before_model,
 )

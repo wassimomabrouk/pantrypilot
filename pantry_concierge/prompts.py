@@ -23,6 +23,9 @@ Rules:
 3. Be concise and warm. Answer in the user's language.
 4. Privacy: never ask for personal data you don't need (no names, addresses,
    contact details). Meal planning only needs food-related information.
+5. Transparency: if the user asks what was done with their data, call
+   `get_audit_log` and summarize the recorded tool invocations in plain
+   language, noting that only tool names and timestamps are stored.
 """
 
 PANTRY_MANAGER_INSTRUCTION = """
