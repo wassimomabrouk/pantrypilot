@@ -18,23 +18,21 @@ A team of specialized agents coordinated by an orchestrator, in which **the LLM 
 
 ## Architecture
 
+## Architecture
 ```mermaid
 flowchart TB
-    U(\[User]) <--> R
-
-    subgraph ADK\["Google ADK · Gemini"]
-        R\[pantry\_concierge<br/><i>root orchestrator — no data tools</i>]
-        R -- delegate --> A\[pantry\_manager<br/><i>inventory CRUD</i>]
-        R -- delegate --> B\[meal\_planner<br/><i>weekly plans + preferences</i>]
-        R -- delegate --> C\[shopping\_assistant<br/><i>plan − pantry = list</i>]
+    U["User"] <--> R
+    subgraph ADK["Google ADK · Gemini"]
+        R["pantry_concierge<br/><i>root orchestrator — no data tools</i>"]
+        R -- delegate --> A["pantry_manager<br/><i>inventory CRUD</i>"]
+        R -- delegate --> B["meal_planner<br/><i>weekly plans + preferences</i>"]
+        R -- delegate --> C["shopping_assistant<br/><i>plan − pantry = list</i>"]
     end
-
-    subgraph VAULT\["PantryVault — custom MCP server (stdio, local)"]
-        V\[11 validated tools<br/>+ audit log]
-        DB\[(SQLite<br/>pantry · preferences/allergies<br/>meal plans · shopping lists)]
+    subgraph VAULT["PantryVault — custom MCP server (stdio, local)"]
+        V["11 validated tools<br/>+ audit log"]
+        DB[("SQLite<br/>pantry · preferences/allergies<br/>meal plans · shopping lists")]
         V --> DB
     end
-
     A -- "allowlist: 4 tools" --> V
     B -- "allowlist: 5 tools" --> V
     C -- "allowlist: 5 tools" --> V
